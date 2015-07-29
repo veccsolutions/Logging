@@ -31,7 +31,14 @@ namespace Microsoft.Framework.Logging
             {
                 foreach (var logger in _loggers)
                 {
-                    logger.Log(logLevel, eventId, state, exception, formatter);
+                    try
+                    {
+                        logger.Log(logLevel, eventId, state, exception, formatter);
+                    }
+                    catch
+                    {
+                        // ignore exceptions thrown by a logger and continue calling other loggers
+                    }
                 }
             }
         }
@@ -44,9 +51,16 @@ namespace Microsoft.Framework.Logging
             }
             foreach (var logger in _loggers)
             {
-                if (logger.IsEnabled(logLevel))
+                try
                 {
-                    return true;
+                    if (logger.IsEnabled(logLevel))
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // ignore exceptions thrown by a logger and continue calling other loggers
                 }
             }
             return false;
@@ -58,7 +72,15 @@ namespace Microsoft.Framework.Logging
             var scope = new Scope(loggers.Length);
             for (var index = 0; index != loggers.Length; index++)
             {
-                scope.SetDisposable(index, loggers[index].BeginScopeImpl(state));
+                try
+                {
+                    var disposable = loggers[index].BeginScopeImpl(state);
+                    scope.SetDisposable(index, disposable);
+                }
+                catch
+                {
+                    // ignore exceptions thrown by a logger and continue calling other loggers
+                }
             }
             return scope;
         }
