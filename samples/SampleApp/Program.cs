@@ -1,5 +1,8 @@
 ﻿using System;
 using Microsoft.Framework.Logging;
+#if !DNXCORE50
+using SampleApp.Timings;
+#endif
 using ILogger = Microsoft.Framework.Logging.ILogger;
 
 namespace SampleApp
@@ -18,6 +21,7 @@ namespace SampleApp
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
 #if !DNXCORE50
+            factory.AddTimingNLog(new NLog.LogFactory());
             factory.AddNLog(new NLog.LogFactory());
             factory.AddEventLog();
 #endif
